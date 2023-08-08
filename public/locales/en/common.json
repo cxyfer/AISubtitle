@@ -18,7 +18,7 @@
     "Download-Translated": "Download translated",
     "Bili-Url": "Full Youtube video URL",
     "Bili-Get-Sub": "Get video subs",
-    "Welcome": "Translate SRT/ASS files or Youtube subtiles\nPowered by OpenAI GPT-3.5",
+    "Welcome": "Translate SRT/ASS files\nPowered by OpenAI GPT-3.5",
     "Request-Key": "Please enter your OpenAI API key, like sk-xxxx ",
     "API-Slow-Warn": "OpenAI API may be slow, please wait",
     "Progress": "IP ",

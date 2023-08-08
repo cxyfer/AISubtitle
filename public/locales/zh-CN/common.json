@@ -18,7 +18,7 @@
     "Download-Translated": "下载译文字幕",
     "Bili-Url": "输入完整B站/油管视频链接",
     "Bili-Get-Sub": "获取网站字幕",
-    "Welcome": "支持翻译本地SRT/ASS格式字幕及B站/油管字幕\nPowered by OpenAI GPT-3.5",
+    "Welcome": "支持翻译本地SRT/ASS格式字幕\nPowered by OpenAI GPT-3.5",
     "Request-Key": "请输入你的OpenAI API key，如 sk-xxxx ",
     "translate file successfully": "翻译字幕文件成功",
     "translate file failed ": "翻译字幕文件失败",
