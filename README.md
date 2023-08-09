@@ -3,6 +3,8 @@
 # 新增
 
 - [x] 自定义 OpenAi Host
+- [x] 自定义 模型
+- [x] 自定义 prompt
 
 # 移除
 

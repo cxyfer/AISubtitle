@@ -15,6 +15,7 @@ export default function Footer() {
         color: "rgb(148, 163, 184)",
       }}
     >
+      <div>企鹅交流群：812561075</div>
       <div>
         Thanks to{" "}
         <a
