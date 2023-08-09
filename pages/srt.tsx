@@ -61,6 +61,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * @param useGoogle 是否启用谷歌翻译
  * @param promptTemplate 提示语模板
  * @param customHost 自定义Host
+ * @param gptModel Gpt模型
  * @returns
  */
 async function traslate_all(
@@ -70,7 +71,8 @@ async function traslate_all(
   notifyResult?: any,
   useGoogle?: boolean,
   promptTemplate?: string,
-  customHost?: string
+  customHost?: string,
+  gptModel?: string
 ) {
   const batches: Node[][] = [];
   for (let i = 0; i < nodes.length; i += PAGE_SIZE) {
@@ -89,7 +91,8 @@ async function traslate_all(
           apiKey,
           useGoogle,
           promptTemplate,
-          customHost
+          customHost,
+          gptModel
         );
         results.push(...r);
         success = true;
@@ -119,6 +122,7 @@ async function traslate_all(
  * @param useGoogle 是否启用谷歌翻译
  * @param promptTemplate 提示语模板
  * @param customHost 自定义Host
+ * @param gptModel gpt模型
  * @returns
  */
 async function translate_one_batch(
@@ -127,7 +131,8 @@ async function translate_one_batch(
   apiKey?: string,
   useGoogle?: boolean,
   promptTemplate?: string,
-  customHost?: string
+  customHost?: string,
+  gptModel?: string
 ) {
   const sentences = nodes.map((node) => node.content);
   // if last sentence ends with ",", remove it
@@ -150,6 +155,7 @@ async function translate_one_batch(
       apiKey: apiKey,
       promptTemplate: promptTemplate,
       baseHost: customHost,
+      gptModel: gptModel,
     }),
   };
 
@@ -206,6 +212,13 @@ export default function Srt() {
   const { t } = useTranslation("common");
   const langs = showAllLang ? suportedLangZh : commonLangZh;
   const isEnglish = t("English") === "English";
+  const modleOptions = [
+    "gpt-3.5-turbo-0613",
+    "gpt-3.5-turbo-16k-0613",
+    "gpt-3.5-turbo",
+    "gpt-3.5-turbo-0301",
+    "gpt-3.5-turbo-16k",
+  ];
 
   const getUseGoogle = () => {
     const res = localStorage.getItem("translate-engine");
@@ -227,13 +240,20 @@ export default function Srt() {
 
   //提示语
   const getUserPrompt = () => {
-    const res = localStorage.getItem("user-prompt-template");
-    if (res) return res;
+    return (document.getElementById("txt_promptTemplate") as HTMLSelectElement)
+      .value;
+    // const res = localStorage.getItem("user-prompt-template");
+    // if (res) return res;
   };
 
   //多语言
   const getLang = () => {
     return (document.getElementById("langSelect") as HTMLSelectElement).value;
+  };
+
+  //模型
+  const getModel = () => {
+    return (document.getElementById("modelSelect") as HTMLSelectElement).value;
   };
 
   /**
@@ -325,7 +345,8 @@ export default function Srt() {
         on_trans_result,
         getUseGoogle(),
         getUserPrompt(),
-        getUserCustomHost()
+        getUserCustomHost(),
+        getModel()
       );
       //download("output.srt", nodesToSrtText(newnodes));
       toast.success(t("translate file successfully"));
@@ -349,7 +370,8 @@ export default function Srt() {
         getUserKey(),
         getUseGoogle(),
         getUserPrompt(),
-        getUserCustomHost()
+        getUserCustomHost(),
+        getModel()
       );
       setTransNodes((nodes) => {
         const nodesCopy = [...nodes];
@@ -402,7 +424,7 @@ export default function Srt() {
     const tempTransNodes = transNodes;
 
     tempTransNodes.forEach((it) => {
-      const currentOriginal = nodes.filter((item) => item.pos == it.pos);
+      const currentOriginal = nodes.filter((item) => item?.pos == it?.pos);
       if (currentOriginal.length == 1) {
         //源文件在上 翻译在下
         it.content = `${currentOriginal[0].content}\n${it.content}`;
@@ -443,6 +465,22 @@ export default function Srt() {
               alignItems: "center",
             }}
           >
+            <div>
+              <label style={{ marginRight: "10px", marginLeft: "120px" }}>
+                模板信息
+              </label>
+              <textarea
+                id="txt_promptTemplate"
+                placeholder="提示语模板信息"
+                rows={3}
+                cols={80}
+              >
+                {
+                  "你是一个专业的翻译。请逐行翻译下面的文本到{{target_lang}}，注意保留数字和换行符，请勿自行创建内容，除了翻译，不要输出任何其他文本。"
+                }
+              </textarea>
+              <abbr style={{ color: "red" }}>* 非必要可不用改</abbr>
+            </div>
             <div style={{ display: "flex" }}>
               <a
                 href="#!"
@@ -457,6 +495,17 @@ export default function Srt() {
                   id="file"
                 />
               </a>
+
+              <label style={{ marginRight: "10px", marginLeft: "120px" }}>
+                选择模型
+              </label>
+              <select id="modelSelect">
+                {modleOptions.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
             </div>
             <div style={{ display: "flex", alignItems: "center" }}>
               <button

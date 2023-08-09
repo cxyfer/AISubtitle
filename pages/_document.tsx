@@ -2,10 +2,10 @@ import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   let description =
-    "AI字幕翻译/格式转化小工具, translate subtilte, caption, close caption, using chatGPT AI";
+    "AI字幕翻译/格式转化小工具, translate subtilte, caption, close caption, using chatGPT AI, 企鹅交流群：812561075";
   //let ogimage = `${BASE_DOMAIN}/og-image.png`;
   let sitename = "ai.cgsv.top";
-  let title = "AI字幕翻译";
+  let title = "AI字幕翻译 by jkhcc11/AISubtitle";
 
   return (
     <Html lang="en">

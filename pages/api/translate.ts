@@ -17,20 +17,35 @@ export default async function handler(
   req: NextRequest,
   context: NextFetchEvent
 ) {
-  const { sentences, targetLang, srcLang, apiKey, promptTemplate, baseHost } =
-    (await req.json()) as {
-      sentences: string[];
-      targetLang: string;
-      srcLang?: string;
-      apiKey?: string;
-      promptTemplate?: string;
-      baseHost?: string;
-    };
+  const {
+    sentences,
+    targetLang,
+    srcLang,
+    apiKey,
+    promptTemplate,
+    baseHost,
+    gptModel,
+  } = (await req.json()) as {
+    sentences: string[];
+    targetLang: string;
+    srcLang?: string;
+    apiKey?: string;
+    promptTemplate?: string;
+    baseHost?: string;
+    gptModel?: string;
+  };
   if (!sentences || sentences.length === 0) {
     return new Response("no subtitles", { status: 500 });
   }
 
-  const payload = getPayload(sentences, targetLang, srcLang, promptTemplate);
+  //获取请求体
+  const payload = getPayload(
+    sentences,
+    targetLang,
+    srcLang,
+    promptTemplate,
+    gptModel
+  );
   const { res_keys } = payload;
 
   try {
