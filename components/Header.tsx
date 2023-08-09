@@ -3,8 +3,6 @@ import Github from "./Github";
 import { useLocalStorage } from "react-use";
 import { checkOpenaiApiKey } from "@/lib/openai/openai";
 import { toast } from "react-hot-toast";
-import { useTranslation } from "next-i18next";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { CacheKey } from "@/utils/constants";
 
@@ -21,9 +19,6 @@ export default function Header() {
   const [translateEngineStore, setTranslateEngineStore] =
     useLocalStorage<string>("translate-engine");
 
-  const { t } = useTranslation("common");
-  const { i18n } = useTranslation();
-  const router = useRouter();
   const tooltip =
     "当前使用： " +
     (translateEngine === "google" ? "google翻译" : "ChatGPT") +
@@ -32,22 +27,6 @@ export default function Header() {
   useEffect(() => {
     setTranslateEngine(translateEngineStore || "");
   }, [translateEngineStore]);
-
-  /**
-   * 切换语言
-   */
-  const changeLang = () => {
-    const newLang = i18n.language === "en" ? "zh-CN" : "en";
-
-    router.push(
-      {
-        pathname: router.pathname,
-        query: router.query,
-      },
-      router.asPath,
-      { locale: newLang }
-    );
-  };
 
   /**
    * 切换翻译引擎
@@ -65,9 +44,9 @@ export default function Header() {
     const key = prompt("你的Key");
     if (key && checkOpenaiApiKey(key)) {
       setUserKey(key);
-      toast.success(t("ApiKey 设置成功"));
+      toast.success("ApiKey 设置成功");
     } else {
-      toast.error(t("ApiKey 设置失败"));
+      toast.error("ApiKey 设置失败");
     }
   };
 
@@ -78,9 +57,9 @@ export default function Header() {
     const baseHost = prompt("你的代理");
     if (baseHost) {
       setUserHost(baseHost);
-      toast.success(t("代理地址 设置成功"));
+      toast.success("代理地址 设置成功");
     } else {
-      toast.error(t("代理地址 设置失败"));
+      toast.error("代理地址 设置失败");
     }
   };
 
