@@ -1,17 +1,13 @@
-import Srt from './srt';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import nextI18nextConfig from '../next-i18next.config.js';
+import Srt from "./srt";
 
 export default function Home() {
-  return (
-    <Srt></Srt>
-  )
+  return <Srt></Srt>;
 }
 
-export async function getStaticProps({ locale }: {locale:string}) {
-  return {
-      props: {
-          ...(await serverSideTranslations(locale, ['common'], nextI18nextConfig)),
-      }
-  }
-}
+// export async function getStaticProps({ locale }: {locale:string}) {
+//   return {
+//       props: {
+//           ...(await serverSideTranslations(locale, ['common'], nextI18nextConfig)),
+//       }
+//   }
+// }

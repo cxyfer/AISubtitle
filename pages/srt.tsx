@@ -13,9 +13,11 @@ import {
 import Subtitles from "@/components/Subtitles";
 import { toast, Toaster } from "react-hot-toast";
 import styles from "@/styles/Srt.module.css";
-import { useTranslation } from "next-i18next";
 import { suportedLangZh, commonLangZh, langBiMap } from "@/lib/lang";
 import { CacheKey, ENABLE_SHOP } from "@/utils/constants";
+import { getPayload, parse_gpt_resp } from "@/lib/openai/prompt";
+import { isDev } from "@/utils/env";
+import { OpenAIResult } from "@/lib/openai/OpenAIResult";
 
 const MAX_FILE_SIZE = 512 * 1024; // 512KB
 const PAGE_SIZE = 10;
@@ -144,40 +146,69 @@ async function translate_one_batch(
     );
   }
 
-  let options = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      targetLang: lang,
-      sentences: sentences,
-      apiKey: apiKey,
-      promptTemplate: promptTemplate,
-      baseHost: customHost,
-      gptModel: gptModel,
-    }),
-  };
+  // let options = {
+  //   method: "POST",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  //   body: JSON.stringify({
+  //     targetLang: lang,
+  //     sentences: sentences,
+  //     apiKey: apiKey,
+  //     promptTemplate: promptTemplate,
+  //     baseHost: customHost,
+  //     gptModel: gptModel,
+  //   }),
+  // };
 
-  console.time("request /api/translate");
-  const url = useGoogle ? "/api/googleTran" : "/api/translate";
-  const res = await fetch(url, options);
-  console.timeEnd("request /api/translate");
+  // console.time("request /api/translate");
+  // const url = useGoogle ? "/api/googleTran" : "/api/translate";
+  // const res = await fetch(url, options);
 
-  if (res.redirected) {
-    if (ENABLE_SHOP) {
-      window.location.href = res.url;
-      throw new Error(" redirected");
-    } else {
-      throw new Error(" rate limited. Please enter you OpenAI key");
-    }
+  //获取请求体
+  const payload = getPayload(
+    sentences,
+    lang,
+    undefined,
+    promptTemplate,
+    gptModel
+  );
+
+  const { res_keys } = payload;
+
+  try {
+    isDev && apiKey && console.log("=====use user api key=====");
+    isDev && customHost && console.log("=====use user custom host=====");
+    isDev && console.log("payload", payload);
+    const result = await OpenAIResult(payload, apiKey, customHost);
+    const resp = parse_gpt_resp(result, res_keys!);
+
+    // let rkey = `${targetLang}_${srcLang}_${sentences}}`;
+    // rkey = "tranres_" + await digestMessage(rkey);
+    // const data = await redis.set(rkey, JSON.stringify(resp));
+    // console.log("cached data", data);
+
+    //return NextResponse.json(resp);
+    //todo:
+    console.log("resp", resp);
+    // console.timeEnd("request /api/translate");
+
+    // if (res.redirected) {
+    //   throw new Error(" rate limited. Please enter you OpenAI key");
+    // }
+
+    //const jres = await resp.json();
+    // if (jres.errorMessage) {
+    //   throw new Error(jres.errorMessage);
+    // }
+    return nodesToTransNodes(nodes, resp);
+  } catch (error: any) {
+    console.log("API error", error, error.message);
+    // return NextResponse.json({
+    //   errorMessage: error.message,
+    // });
+    throw new Error("翻译异常" + error.message);
   }
-
-  const jres = await res.json();
-  if (jres.errorMessage) {
-    throw new Error(jres.errorMessage);
-  }
-  return nodesToTransNodes(nodes, jres);
 }
 
 /**
@@ -209,9 +240,8 @@ export default function Srt() {
     transCount: 0,
   });
   const [showAllLang, setShowAllLang] = useState(false);
-  const { t } = useTranslation("common");
   const langs = showAllLang ? suportedLangZh : commonLangZh;
-  const isEnglish = t("English") === "English";
+  const isEnglish = false;
   const modleOptions = [
     "gpt-3.5-turbo-0613",
     "gpt-3.5-turbo-16k-0613",
@@ -298,13 +328,13 @@ export default function Srt() {
     const f: File = input.files[0];
     if (!f) return;
     if (f.size > MAX_FILE_SIZE) {
-      toast.error(t("Max file size 512KB"));
+      toast.error("最大只支持大小512kb");
       clearFileInput();
       return;
     }
     const encoding = await getEncoding(f);
     if (!encoding) {
-      toast.error(t("Cannot open as text file"));
+      toast.error("无法以文本打开");
       clearFileInput();
       return;
     }
@@ -349,9 +379,9 @@ export default function Srt() {
         getModel()
       );
       //download("output.srt", nodesToSrtText(newnodes));
-      toast.success(t("translate file successfully"));
+      toast.success("翻译字幕文件成功");
     } catch (e) {
-      toast.error(t("translate file failed ") + String(e));
+      toast.error("翻译字幕文件失败" + String(e));
     }
     setTransFileStatus((old) => {
       return { ...old, isTranslating: false };
@@ -382,7 +412,7 @@ export default function Srt() {
       });
     } catch (e) {
       console.error("translate failed", e);
-      toast.error(t("translate failed") + String(e));
+      toast.error("翻译失败" + String(e));
     }
     setLoading(false);
   };
@@ -403,25 +433,26 @@ export default function Srt() {
    * 下载翻译字幕
    */
   const download_translated = () => {
-    //const nodes = transNodes.filter((n) => n);
-    if (transNodes.length == 0) {
+    const nodes = transNodes.filter((n) => n);
+    if (nodes.length == 0) {
       toast.error("暂无可下载内容");
       return;
     }
 
-    download("translated.srt", nodesToSrtText(transNodes));
+    download("translated.srt", nodesToSrtText(nodes));
   };
 
   /**
    * 下载双语字幕
    */
   const download_translated_retain_original = () => {
-    if (transNodes.length == 0) {
+    const filterTransNodes = transNodes.filter((n) => n);
+    if (filterTransNodes.length == 0) {
       toast.error("暂无可下载内容");
       return;
     }
 
-    const tempTransNodes = transNodes;
+    const tempTransNodes = filterTransNodes;
 
     tempTransNodes.forEach((it) => {
       const currentOriginal = nodes.filter((item) => item?.pos == it?.pos);
@@ -439,7 +470,7 @@ export default function Srt() {
   return (
     <>
       <Head>
-        <title>{t("AI-Subtilte")}</title>
+        <title>{"AI字幕助手 Powered by OpenAI "}</title>
       </Head>
       <main style={{ minHeight: "90vh" }}>
         <Toaster
@@ -447,7 +478,20 @@ export default function Srt() {
           reverseOrder={false}
           toastOptions={{ duration: 4000 }}
         />
-        <div className={styles.welcomeMessage}>{t("Welcome")}</div>
+        <div className={styles.welcomeMessage}>
+          {"支持翻译本地SRT/ASS格式字幕\nPowered by OpenAI GPT-3.5"}
+        </div>
+        <div
+          style={{
+            color: "red",
+            display: "block",
+            fontSize: "23px",
+            fontWeight: "bold",
+          }}
+        >
+          ***
+          注：尽量使用自建代理或者社区公开代理，如需直连请自行本地准备好【环境】
+        </div>
 
         <div
           style={{
@@ -472,13 +516,12 @@ export default function Srt() {
               <textarea
                 id="txt_promptTemplate"
                 placeholder="提示语模板信息"
-                rows={3}
-                cols={80}
-              >
-                {
+                defaultValue={
                   "你是一个专业的翻译。请逐行翻译下面的文本到{{target_lang}}，注意保留数字和换行符，请勿自行创建内容，除了翻译，不要输出任何其他文本。"
                 }
-              </textarea>
+                rows={3}
+                cols={80}
+              ></textarea>
               <abbr style={{ color: "red" }}>* 非必要可不用改</abbr>
             </div>
             <div style={{ display: "flex" }}>
@@ -487,7 +530,7 @@ export default function Srt() {
                 className={styles.file}
                 style={{ marginLeft: "50px" }}
               >
-                {t("select-local-sub")}
+                {"选择字幕文件"}
                 <input
                   onChange={onChooseFile}
                   type="file"
@@ -513,7 +556,7 @@ export default function Srt() {
                 onClick={() => toPage(-1)}
                 type="button"
               >
-                {t("prev")}
+                {"上一页"}
               </button>
               <p
                 style={{
@@ -529,11 +572,11 @@ export default function Srt() {
                 onClick={() => toPage(1)}
                 type="button"
               >
-                {t("next")}
+                {"下一页"}
               </button>
 
               <label style={{ marginRight: "10px", marginLeft: "120px" }}>
-                {t("targetLang")}
+                {"目标语言"}
               </label>
               <select className={styles.selectLang} id="langSelect">
                 {langs.map((lang) => (
@@ -544,7 +587,7 @@ export default function Srt() {
               </select>
               <input
                 type="checkbox"
-                title={t("Show All languages")!}
+                title={"显示所有语言"}
                 style={{ marginLeft: "5px" }}
                 checked={showAllLang}
                 onChange={(e) => setShowAllLang(e.target.checked)}
@@ -553,11 +596,11 @@ export default function Srt() {
                 <button
                   onClick={translate}
                   type="button"
-                  title={t("API-Slow-Warn")!}
+                  title={"OpenAI接口可能较慢，请耐心等待"}
                   className={styles.genButton}
                   style={{ marginLeft: "5px", height: "30px", width: "80px" }}
                 >
-                  {t("Translate-This")}
+                  {"翻译本页"}
                 </button>
               ) : (
                 <button
@@ -584,7 +627,7 @@ export default function Srt() {
               )}
             </div>
             <div style={{ color: "gray" }}>
-              {filename ? filename : t("No subtitle selected")}
+              {filename ? filename : "未选择字幕"}
             </div>
             <Subtitles
               nodes={curPageNodes(nodes, curPage)}
@@ -609,7 +652,7 @@ export default function Srt() {
                     width: "120px",
                   }}
                 >
-                  {t("Translate-File")}
+                  {"翻译整个文件"}
                 </button>
               ) : (
                 <button
@@ -628,7 +671,7 @@ export default function Srt() {
                     width={20}
                     height={20}
                   />
-                  {t("Progress")}
+                  {"进度"}
                   {transFileStatus.transCount}/{get_page_count()}
                 </button>
               )}
@@ -637,14 +680,14 @@ export default function Srt() {
                 className={styles.genButton}
                 style={{ height: "30px", marginRight: "20px" }}
               >
-                {t("Download-Original")}
+                {"下载原文字幕"}
               </button>
               <button
                 onClick={download_translated}
                 className={styles.genButton}
                 style={{ height: "30px", marginRight: "20px" }}
               >
-                {t("Download-Translated")}
+                {"下载译文字幕"}
               </button>
 
               <button
