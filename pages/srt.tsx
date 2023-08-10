@@ -446,7 +446,9 @@ export default function Srt() {
    * 下载双语字幕
    */
   const download_translated_retain_original = () => {
-    const filterTransNodes = transNodes.filter((n) => n);
+    const filterTransNodes = JSON.parse(JSON.stringify(transNodes)).filter(
+      (n: any) => n
+    );
     if (filterTransNodes.length == 0) {
       toast.error("暂无可下载内容");
       return;
@@ -454,11 +456,11 @@ export default function Srt() {
 
     const tempTransNodes = filterTransNodes;
 
-    tempTransNodes.forEach((it) => {
+    tempTransNodes.forEach((it: any) => {
       const currentOriginal = nodes.filter((item) => item?.pos == it?.pos);
       if (currentOriginal.length == 1) {
-        //源文件在上 翻译在下
-        it.content = `${currentOriginal[0].content}\n${it.content}`;
+        //译 上 源下
+        it.content = `${it.content}\n${currentOriginal[0].content}`;
       }
     });
 
