@@ -5,7 +5,7 @@ const About: React.FC = () => {
     <Space
       direction="vertical"
       size="middle"
-      style={{ display: "flex", height: "750px" }}
+      style={{ display: "flex", height: "550px" }}
     >
       <div
         style={{

@@ -264,6 +264,7 @@ const SrtNew: React.FC = () => {
     }
 
     setLoading(true);
+    setTransFileStatus({ isTranslating: true, transCount: 0 });
     try {
       const newnodes = await translate_one_batch(
         curPageNodes(nodes, curPage),
@@ -281,6 +282,7 @@ const SrtNew: React.FC = () => {
       message.error("翻译失败" + String(e.message));
     } finally {
       setLoading(false);
+      setTransFileStatus({ isTranslating: false, transCount: 0 });
     }
   };
 
@@ -368,11 +370,7 @@ const SrtNew: React.FC = () => {
     downCall.downTrans();
   };
   return (
-    <Space
-      direction="vertical"
-      size="middle"
-      style={{ display: "flex", height: "780px" }}
-    >
+    <Space direction="vertical" size="middle" style={{ height: "550px" }}>
       <div style={{ display: "flex" }}>
         <Upload {...props}>
           <Button>选择字幕文件</Button>
@@ -391,11 +389,12 @@ const SrtNew: React.FC = () => {
         </p>
         <Button onClick={() => toPage(1)}>下一页</Button>
 
-        <label style={{ marginRight: "10px", marginLeft: "120px" }}>
+        <label style={{ marginRight: "10px", marginLeft: "110px" }}>
           目标语言
         </label>
         <Select
           showSearch
+          disabled={loading}
           value={lang}
           style={{ width: 200 }}
           placeholder="搜索目标语言"
@@ -409,6 +408,7 @@ const SrtNew: React.FC = () => {
         />
 
         <Switch
+          disabled={loading}
           checkedChildren="所有语言"
           unCheckedChildren="默认语言"
           onChange={(checked) => setShowAllLang(checked)}
@@ -418,7 +418,7 @@ const SrtNew: React.FC = () => {
           <Button
             onClick={onTranslatePage}
             loading={loading}
-            style={{ marginLeft: "80px" }}
+            style={{ marginLeft: "50px" }}
           >
             {loading ? "翻译中,请稍等" : "翻页本页"}
           </Button>
@@ -440,8 +440,11 @@ const SrtNew: React.FC = () => {
           </Popconfirm>
         </Tooltip>
 
-        <div style={{ display: "inline-block", marginLeft: "30px" }}>
-          <Dropdown.Button menu={{ items: downItems, onClick: onDownClick }}>
+        <div style={{ display: "inline-block", marginLeft: "20px" }}>
+          <Dropdown.Button
+            menu={{ items: downItems, onClick: onDownClick }}
+            disabled={loading}
+          >
             译文下载
           </Dropdown.Button>
         </div>

@@ -39,9 +39,16 @@ export default function SubtitlesNew({
 
   const defaultColumns: any[] = [
     {
+      title: "序号",
+      dataIndex: "key",
+      key: "key",
+      width: 100,
+    },
+    {
       title: "时间戳",
       dataIndex: "timestamp",
       key: "timestamp",
+      width: 150,
     },
     {
       title: "原文",
@@ -61,6 +68,7 @@ export default function SubtitlesNew({
 
   return (
     <Table
+      scroll={{ y: "350px" }}
       bordered
       dataSource={tempDataSource}
       columns={defaultColumns}
