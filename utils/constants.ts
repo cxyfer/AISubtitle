@@ -10,4 +10,29 @@ export const DEFAULT_BASE_URL_HOST = "https://api.openai.com";
 export const CacheKey = {
   UserApikeyWithOpenAi: "user-openai-apikey-trans",
   UserBaseHostWithOpenAi: "user-openai-host",
+  UserCustomSetting: "user-custom-setting",
+};
+
+/**
+ * 缓存Item
+ */
+export interface CustomConfigItem {
+  customHost?: string;
+  customModel: string;
+  apiKey?: string;
+  promptTemplate: string;
+}
+
+/**
+ * 获取自定义配置缓存
+ * @returns
+ */
+export const getCustomConfigCache = (): CustomConfigItem => {
+  const res = localStorage.getItem(CacheKey.UserCustomSetting);
+  if (res) return JSON.parse(res) as CustomConfigItem;
+  return {
+    customModel: "gpt-3.5-turbo-16k",
+    promptTemplate:
+      "你是一个专业的翻译。请逐行翻译下面的文本到{{target_lang}}，注意保留数字和换行符，请勿自行创建内容，除了翻译，不要输出任何其他文本。",
+  } as CustomConfigItem;
 };
