@@ -248,6 +248,8 @@ export default function Srt() {
     "gpt-3.5-turbo",
     "gpt-3.5-turbo-0301",
     "gpt-3.5-turbo-16k",
+    "gpt-4-0314",
+    "gpt-4-0613",
   ];
 
   const getUseGoogle = () => {
@@ -520,7 +522,7 @@ export default function Srt() {
                   "你是一个专业的翻译。请逐行翻译下面的文本到{{target_lang}}，注意保留数字和换行符，请勿自行创建内容，除了翻译，不要输出任何其他文本。"
                 }
                 rows={3}
-                cols={80}
+                cols={70}
               ></textarea>
               <abbr style={{ color: "red" }}>* 非必要可不用改</abbr>
             </div>
