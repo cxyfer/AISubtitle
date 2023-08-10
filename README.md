@@ -16,17 +16,17 @@
 
 #### a、自有 Api key 和 【本地环境】支持的
 
-- 把下图 1 设置为: `sk-xxxxxxxx`
-- 把下图 2 设置为: `https://api.openai.com`
+- 把下图 2 设置为: `sk-xxxxxxxx`
+- 把下图 1 设置为: `https://api.openai.com`
 
 #### b、有自建反代的
 
-- 把下图 2 设置为你的地址: `https://xxxx.xxxxx.com`
+- 把下图 1 设置为你的地址: `https://xxxx.xxxxx.com`
 
 #### c、中转的
 
-- 把下图 1 设置为`中转`的 key: `xxxxxxxx`
-- 把下图 2 设置为`中转`的地址: `https://xxxx.xxxxx.com`
+- 把下图 2 设置为`中转`的 key: `xxxxxxxx`
+- 把下图 1 设置为`中转`的地址: `https://xxxx.xxxxx.com`
 
 <div>
 <img src="./public/setting_1.png" />
