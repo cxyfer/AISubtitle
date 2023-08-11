@@ -75,11 +75,11 @@ export const EditableCell: React.FC<EditableCellProps> = ({
     childNode = editing ? (
       <Form.Item
         style={{ margin: 0 }}
-        name={dataIndex}
+        name={dataIndex.toString()}
         rules={[
           {
             required: true,
-            message: `${title} is required.`,
+            message: `${title} 必填.`,
           },
         ]}
       >
