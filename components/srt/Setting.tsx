@@ -1,7 +1,11 @@
 import React from "react";
 import { useLocalStorage } from "react-use";
-import { Button, Form, Input, message, Select, Space } from "antd";
-import { CacheKey, getCustomConfigCache } from "@/utils/constants";
+import { Button, Form, Input, message, Select, Space, Slider } from "antd";
+import {
+  CacheKey,
+  CustomConfigItem,
+  getCustomConfigCache,
+} from "@/utils/constants";
 const { TextArea } = Input;
 
 const Setting: React.FC = () => {
@@ -21,12 +25,13 @@ const Setting: React.FC = () => {
     "gpt-4-0613",
   ];
 
-  type FieldType = {
-    customHost?: string;
-    customModel?: string;
-    apiKey?: string;
-    promptTemplate?: string;
-  };
+  // type FieldType = {
+  //   customHost?: string;
+  //   customModel?: string;
+  //   apiKey?: string;
+  //   promptTemplate?: string;
+  //   customPageSize: Number;
+  // };
 
   let defaultValue = getCustomConfigCache();
 
@@ -54,13 +59,13 @@ const Setting: React.FC = () => {
         initialValues={defaultValue}
         onFinish={onFinish}
       >
-        <Form.Item<FieldType> label="代理地址" name="customHost">
+        <Form.Item<CustomConfigItem> label="代理地址" name="customHost">
           <Input placeholder="http://xxx.xxx.com 如不填默认为https://api.openai.com" />
         </Form.Item>
-        <Form.Item<FieldType> label="ApiKey" name="apiKey">
+        <Form.Item<CustomConfigItem> label="ApiKey" name="apiKey">
           <Input placeholder="自有Api Key" />
         </Form.Item>
-        <Form.Item<FieldType> label="模型" name="customModel">
+        <Form.Item<CustomConfigItem> label="模型" name="customModel">
           <Select
             options={modleOptions.map((it) => {
               return {
@@ -70,7 +75,7 @@ const Setting: React.FC = () => {
             })}
           />
         </Form.Item>
-        <Form.Item<FieldType>
+        <Form.Item<CustomConfigItem>
           label="Prompt"
           name="promptTemplate"
           rules={[{ required: true, message: "请输入系统提示语" }]}

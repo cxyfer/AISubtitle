@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Dropdown,
@@ -12,6 +12,9 @@ import {
   Tooltip,
   Upload,
   UploadProps,
+  Slider,
+  Row,
+  Col,
 } from "antd";
 import {
   getEncoding,
@@ -23,14 +26,18 @@ import {
   convertToSrt,
 } from "@/lib/srt";
 import { commonLangZh, suportedLangZh } from "@/lib/lang";
-import { DEFAULT_BASE_URL_HOST, getCustomConfigCache } from "@/utils/constants";
+import {
+  DEFAULT_BASE_URL_HOST,
+  getCustomConfigCache,
+  openAiErrorCode,
+} from "@/utils/constants";
 import { isDev } from "@/utils/env";
 import { getPayload, parse_gpt_resp } from "@/lib/openai/prompt";
 import { OpenAIResult } from "@/lib/openai/OpenAIResult";
 import SubtitlesNew from "@/components/new/SubtitlesNew";
 
 const MAX_FILE_SIZE = 512 * 1024; // 512KB
-const PAGE_SIZE = 10;
+//const PAGE_SIZE = 20;
 const MAX_RETRY = 5;
 
 /**
@@ -119,67 +126,14 @@ async function translate_one_batch(nodes: Node[], targetLang: string) {
     const resp = parse_gpt_resp(result, res_keys!);
     return nodesToTransNodes(nodes, resp);
   } catch (error: any) {
-    console.log("API error", error, error.message);
-    throw new Error("翻译异常" + error.message);
+    console.log("API error", error);
+    const tempError = JSON.parse(error.message);
+    throw new Error(`翻译异常,【${(openAiErrorCode as any)[tempError.code]}】`);
   }
-}
-
-/**
- * 翻译文件
- * @param nodes 待翻译节点列表
- * @param lang 目标语言
- * @param notifyResult 翻译完 结果通知回调
- * @returns
- */
-async function traslate_file(nodes: Node[], lang: string, notifyResult?: any) {
-  const batches: Node[][] = [];
-  for (let i = 0; i < nodes.length; i += PAGE_SIZE) {
-    batches.push(nodes.slice(i, i + PAGE_SIZE));
-  }
-  // for now, just use sequential execution
-  const results: Node[] = [];
-  let batch_num = 0;
-  for (const batch of batches) {
-    let success = false;
-    for (let i = 0; i < MAX_RETRY && !success; i++) {
-      try {
-        const r = await translate_one_batch(batch, lang);
-        results.push(...r);
-        success = true;
-        if (notifyResult) {
-          notifyResult(batch_num, r);
-        }
-        console.log(`Translated ${results.length} of ${nodes.length}`);
-      } catch (e) {
-        console.error(e);
-        await sleep(3000); // may exceed rate limit, sleep for a while
-      }
-    }
-    batch_num++;
-    if (!success) {
-      console.error(`translate_all failed for ${batch}`);
-      throw new Error(`translate file ${batch} failed`);
-    }
-  }
-  return results;
-}
-
-/**
- * 根据页数获取当前页待翻译列表
- * @param nodes 所有节点
- * @param curPage 当前页
- * @returns
- */
-function curPageNodes(nodes: Node[], curPage: number) {
-  let res = nodes.slice(curPage * PAGE_SIZE, (curPage + 1) * PAGE_SIZE);
-  if (res.findIndex((n) => n) === -1) {
-    res = [];
-  }
-  return res;
 }
 
 const SrtNew: React.FC = () => {
-  const [modal] = Modal.useModal();
+  const [PAGE_SIZE, setPageSize] = useState(5);
   const [nodes, setNodes] = useState<Node[]>([]);
   const [transNodes, setTransNodes] = useState<Node[]>([]); // make transNode the same structure as nodes
   const [curPage, setCurPage] = useState(0);
@@ -191,6 +145,64 @@ const SrtNew: React.FC = () => {
   });
   const [showAllLang, setShowAllLang] = useState(false);
   const langs = showAllLang ? suportedLangZh : commonLangZh;
+
+  /**
+   * 翻译文件
+   * @param nodes 待翻译节点列表
+   * @param lang 目标语言
+   * @param notifyResult 翻译完 结果通知回调
+   * @returns
+   */
+  async function traslate_file(
+    nodes: Node[],
+    lang: string,
+    notifyResult?: any
+  ) {
+    const batches: Node[][] = [];
+    for (let i = 0; i < nodes.length; i += PAGE_SIZE) {
+      batches.push(nodes.slice(i, i + PAGE_SIZE));
+    }
+    // for now, just use sequential execution
+    const results: Node[] = [];
+    let batch_num = 0;
+    for (const batch of batches) {
+      let success = false;
+      for (let i = 0; i < MAX_RETRY && !success; i++) {
+        try {
+          const r = await translate_one_batch(batch, lang);
+          results.push(...r);
+          success = true;
+          if (notifyResult) {
+            notifyResult(batch_num, r);
+          }
+          console.log(`Translated ${results.length} of ${nodes.length}`);
+        } catch (e) {
+          console.error(e);
+          await sleep(3000); // may exceed rate limit, sleep for a while
+        }
+      }
+      batch_num++;
+      if (!success) {
+        console.error(`translate_all failed for ${batch}`);
+        throw new Error(`translate file ${batch} failed`);
+      }
+    }
+    return results;
+  }
+
+  /**
+   * 根据页数获取当前页待翻译列表
+   * @param nodes 所有节点
+   * @param curPage 当前页
+   * @returns
+   */
+  function curPageNodes(nodes: Node[], curPage: number) {
+    let res = nodes.slice(curPage * PAGE_SIZE, (curPage + 1) * PAGE_SIZE);
+    if (res.findIndex((n) => n) === -1) {
+      res = [];
+    }
+    return res;
+  }
 
   /**
    * 添加字幕并渲染
@@ -369,13 +381,48 @@ const SrtNew: React.FC = () => {
 
     downCall.downTrans();
   };
+
+  //节点编辑回调
+  function onNodeEditCallBack(newNode: Node) {
+    //console.log(newNode);
+    const currentEditNode = transNodes.filter((it) => it.pos == newNode.pos);
+    if (currentEditNode.length == 0) {
+      return;
+    }
+
+    //更新
+    currentEditNode[0].content = newNode.content;
+  }
+
+  //分页大小变更
+  function onPageSizeChange(newValue: number) {
+    setPageSize(newValue);
+  }
+
   return (
     <Space direction="vertical" size="middle" style={{ height: "550px" }}>
-      <div style={{ display: "flex" }}>
-        <Upload {...props}>
-          <Button>选择字幕文件</Button>
-        </Upload>
-      </div>
+      <Row justify="start">
+        <Col span={6}>
+          <Upload {...props}>
+            <Button>选择字幕文件</Button>
+          </Upload>
+        </Col>
+        <Col span={2}>分页大小</Col>
+        <Col span={6}>
+          <Slider
+            disabled={loading}
+            min={5}
+            max={50}
+            onChange={onPageSizeChange}
+            // value={typeof inputValue === "number" ? inputValue : 0}
+          />
+        </Col>
+        <Col span={8}>
+          <span style={{ color: "#1677ff" }}>
+            小技巧：翻译完成后，可直接点击【译文】单元格微调编辑
+          </span>
+        </Col>
+      </Row>
       <div>
         <Button onClick={() => toPage(-1)}>上一页</Button>
         <p
@@ -454,6 +501,7 @@ const SrtNew: React.FC = () => {
         <SubtitlesNew
           nodes={curPageNodes(nodes, curPage)}
           transNodes={curPageNodes(transNodes, curPage)}
+          onUpdateNode={onNodeEditCallBack}
         />
       </div>
     </Space>
