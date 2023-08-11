@@ -66,8 +66,14 @@ export async function OpenAIResult(
     body: JSON.stringify(payload),
   });
 
-  if (res.status !== 200) {
-    throw new Error("OpenAI API: " + res.statusText);
+  if (!res.ok) {
+    const errorResult = await res.json();
+    throw new Error(
+      JSON.stringify({
+        code: errorResult.error.code ?? errorResult.error.type,
+        msg: errorResult.error.message,
+      })
+    );
   }
 
   if (!payload.stream) {
