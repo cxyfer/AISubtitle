@@ -59,7 +59,7 @@ const downItems = [
   },
 ];
 
-//sleep
+//sleep 毫秒
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
@@ -165,6 +165,8 @@ const SrtNew: React.FC = () => {
     // for now, just use sequential execution
     const results: Node[] = [];
     let batch_num = 0;
+    const currentConfig = getCustomConfigCache();
+
     for (const batch of batches) {
       let success = false;
       for (let i = 0; i < MAX_RETRY && !success; i++) {
@@ -176,9 +178,18 @@ const SrtNew: React.FC = () => {
             notifyResult(batch_num, r);
           }
           console.log(`Translated ${results.length} of ${nodes.length}`);
+
+          if (currentConfig.delaySecond && currentConfig.delaySecond > 0) {
+            console.log(
+              "已设置延迟，开始延迟" + currentConfig.delaySecond + "s"
+            );
+            //延迟 满足普通Api
+            await sleep(currentConfig.delaySecond * 1000);
+          }
         } catch (e) {
           console.error(e);
-          await sleep(3000); // may exceed rate limit, sleep for a while
+          //异常延迟3s
+          await sleep(3000);
         }
       }
       batch_num++;

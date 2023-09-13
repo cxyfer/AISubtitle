@@ -21,6 +21,7 @@ export interface CustomConfigItem {
   customModel: string;
   apiKey?: string;
   promptTemplate: string;
+  delaySecond?: number;
 }
 
 /**

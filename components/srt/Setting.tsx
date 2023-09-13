@@ -1,6 +1,15 @@
 import React from "react";
 import { useLocalStorage } from "react-use";
-import { Button, Form, Input, message, Select, Space, Slider } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  message,
+  Select,
+  Space,
+  Slider,
+  InputNumber,
+} from "antd";
 import {
   CacheKey,
   CustomConfigItem,
@@ -65,6 +74,10 @@ const Setting: React.FC = () => {
         <Form.Item<CustomConfigItem> label="ApiKey" name="apiKey">
           <Input placeholder="自有Api Key" />
         </Form.Item>
+        <Form.Item<CustomConfigItem> label="延迟" name="delaySecond">
+          <InputNumber addonAfter="秒" placeholder="非满速Api，请设置延迟" />
+        </Form.Item>
+
         <Form.Item<CustomConfigItem> label="模型" name="customModel">
           <Select
             options={modleOptions.map((it) => {
