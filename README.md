@@ -34,4 +34,45 @@
 
 ## 2、推荐设置
 
-建议把模型改为`16k`版本，如果你有`gpt-4`权限，可直接切换至`gpt-4`模型使用
+如果你想翻译快点，可以把分页大小设置大点，然后把模型改为`16k`版本，如果你有`gpt-4`权限，可直接切换至`gpt-4`模型使用
+
+
+***
+
+- The project is developed based on [AISubtitle](https://github.com/cgsvv/AISubtitle)
+
+# Additions
+
+- [x] Customizable `Base Host`
+- [x] Customizable `Model`
+- [x] Customizable `Prompt`
+
+# Usage Declaration
+
+This project has been switched to a local `Direct Connect` API address. If using a proxy or reverse proxy, please check for cross-origin issues.
+
+# Usage Steps
+
+## 1. Situation Description
+
+#### a. For those with their own Api key and support for 【Local Environment】:
+
+- Set the setting in image 2 to: `sk-xxxxxxxx`
+- Set the setting in image 1 to: `https://api.openai.com`
+
+#### b. For those with their own reverse proxy:
+
+- Set the setting in image 1 to your address: `https://xxxx.xxxxx.com`
+
+#### c. For those using an intermediary:
+
+- Set the setting in image 2 to the intermediary's key: `xxxxxxxx`
+- Set the setting in image 1 to the intermediary's address: `https://xxxx.xxxxx.com`
+
+<div>
+<img src="./public/setting_1.png" />
+</div>
+
+## 2. Recommended Settings
+
+To speed up translations, you can increase the pagination size and switch the model to the `16k` version. If you have access to `gpt-4`, you can directly switch to using the `gpt-4` model.
