@@ -31,6 +31,8 @@ const Setting: React.FC = () => {
     "gpt-4",
     "gpt-4-0613",
     "gpt-4-1106-preview",
+    "gpt-4o",
+    "gpt-4o-2024-05-13",
     "chatglm_lite",
     "chatglm_std",
     "chatglm_pro",
