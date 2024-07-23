@@ -519,7 +519,7 @@ export default function Srt() {
                 id="txt_promptTemplate"
                 placeholder="提示语模板信息"
                 defaultValue={
-                  "你是一个专业的翻译。请逐行翻译下面的文本到{{target_lang}}，注意保留数字和换行符，请勿自行创建内容，除了翻译，不要输出任何其他文本。"
+                  "You are a highly skilled translation engine with expertise in the technology sector. Your function is to translate texts accurately into the target {{target_lang}}, maintaining the original format, technical terms, and abbreviations. Do not add any explanations or annotations to the translated text."
                 }
                 rows={3}
                 cols={80}
