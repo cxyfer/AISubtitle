@@ -115,6 +115,7 @@ const suportedLangZh = `
 粤语（粤语）
 加泰罗尼亚语
 查蒂斯加里语
+繁體中文
 中文
 克罗地亚语
 捷克语
@@ -295,6 +296,7 @@ Wu - wuu
 `.trim().split("\n").map(line => line.split(" - "));
 
 const commonLangZh = `
+繁體中文
 中文
 英语
 西班牙语
