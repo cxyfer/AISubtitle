@@ -25,13 +25,12 @@ const Setting: React.FC = () => {
   const formItemLayout = { labelCol: { span: 4 }, wrapperCol: { span: 14 } };
   const buttonItemLayout = { wrapperCol: { span: 14, offset: 4 } };
   const modleOptions = [
-    "gpt-3.5-turbo",
-    "gpt-4",
-    "gpt-4-turbo",
-    "gpt-4o",
     "gpt-4o-mini",
-    "claude-3-5-sonnet-20240620",
+    "gpt-4o",
+    "gpt-4-turbo",
+    "gpt-4",
     "claude-3-haiku-20240307",
+    "claude-3-5-sonnet-20240620",
     "deepseek-chat",
     "deepseek-coder",
     "chatglm_lite",
