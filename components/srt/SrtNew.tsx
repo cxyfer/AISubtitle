@@ -137,7 +137,7 @@ const SrtNew: React.FC = () => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [transNodes, setTransNodes] = useState<Node[]>([]); // make transNode the same structure as nodes
   const [curPage, setCurPage] = useState(0);
-  const [lang, setLang] = useState("中文");
+  const [lang, setLang] = useState("繁體中文");
   const [loading, setLoading] = useState(false);
   const [transFileStatus, setTransFileStatus] = useState<TranslateFileStatus>({
     isTranslating: false,
